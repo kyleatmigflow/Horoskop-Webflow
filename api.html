@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AstrologyAPI Integration</title>
+</head>
+<body>
+
+<form id="western-horoscope-form">
+  <label for="wr-name">Name:</label>
+  <input type="text" id="wr-name" required><br><br>
+
+  <label for="wr-date">Date:</label>
+  <input type="number" id="wr-date" min="1" max="31" required>
+
+  <label for="wr-month">Month:</label>
+  <input type="number" id="wr-month" min="1" max="12" required>
+
+  <label for="wr-year">Year:</label>
+  <input type="number" id="wr-year" min="1900" max="2099" required><br><br>
+
+  <label for="wr-hour">Hour:</label>
+  <input type="number" id="wr-hour" min="0" max="23" required>
+
+  <label for="wr-minute">Minute:</label>
+  <input type="number" id="wr-minute" min="0" max="59" required><br><br>
+
+  <label for="wr-lon">Longitude:</label>
+  <input type="number" id="wr-lon" min="-180" max="180" step="0.0001" required><br><br>
+
+  <label for="wr-lat">Latitude:</label>
+  <input type="number" id="wr-lat" min="-90" max="90" step="0.0001" required><br><br>
+
+  <label for="wr-tzone">Timezone:</label>
+  <input type="number" id="wr-tzone" min="-12" max="14" step="0.1" required><br><br>
+
+  <button type="submit">Get Horoscope</button>
+</form>
+
+<div id="user-info"></div>
+<div id="result"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('western-horoscope-form');
+    form.addEventListener('submit', handleFormSubmission);
+
+    function handleFormSubmission(event) {
+      event.preventDefault();
+
+      const apiKey = 'NjAyMDIyOmRkZDUxYWYyZTE4YmUzNWM3M2MxYTZkMGVhNzczNjRk';
+      const name = document.getElementById('wr-name').value;
+      const day = document.getElementById('wr-date').value;
+      const month = document.getElementById('wr-month').value;
+      const year = document.getElementById('wr-year').value;
+      const hour = document.getElementById('wr-hour').value;
+      const min = document.getElementById('wr-minute').value;
+      const lon = parseFloat(document.getElementById('wr-lon').value);
+      const lat = parseFloat(document.getElementById('wr-lat').value);
+      const tzone = parseFloat(document.getElementById('wr-tzone').value);
+
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+      myHeaders.append("Authorization", `Basic ${apiKey}`);
+
+      const urlencoded = new URLSearchParams();
+      urlencoded.append("day", day);
+      urlencoded.append("month", month);
+      urlencoded.append("year", year);
+      urlencoded.append("hour", hour);
+      urlencoded.append("min", min);
+      urlencoded.append("lon", lon);
+      urlencoded.append("lat", lat);
+      urlencoded.append("tzone", tzone);
+
+      const requestOptions = {
+        method: 'POST',
+        headers: myHeaders,
+        body: urlencoded,
+        redirect: 'follow'
+      };
+
+      fetch("https://json.astrologyapi.com/v1/western_horoscope", requestOptions)
+        .then(response => response.json())
+        .then(result => {
+          console.log(result);
+
+          const latDirection = lat >= 0 ? 'N' : 'S';
+          const lonDirection = lon >= 0 ? 'E' : 'W';
+
+          const userInfoDiv = document.getElementById('user-info');
+          userInfoDiv.innerHTML = `User: ${name}, Date: ${day}.${month}.${year}, Time: ${hour}:${min}, Location: ${Math.abs(lat)}°${latDirection}, ${Math.abs(lon)}°${lonDirection}, Tzone: ${tzone}`;
+
+          const tableHTML = `
+            <table>
+              <tbody>
+                ${result.planets.map(planet => `
+                  <tr>
+                    <td>${planet.sign}</td>
+                    <td>${planet.name}</td>
+                    <td>${planet.full_degree}</td>
+                    <td>${planet.is_retro}</td>
+                    <td>${planet.sign}</td>
+                    <td>${planet.house}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+
+          const resultDiv = document.getElementById('result');
+          resultDiv.innerHTML = tableHTML;
+        })
+        .catch(error => console.log('error', error));
+    }
+  });
+</script>
+
+</body>
+</html>
