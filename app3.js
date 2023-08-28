@@ -1,5 +1,5 @@
 // At the top of your code
-const config = require('./config');
+const config = require('/config');
 
 // Then use it like this
 const apiKey = config.apiKey;
